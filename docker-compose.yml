@@ -16,15 +16,16 @@ services:
       retries: 5
 
   traccar:
-    image: traccar/traccar:6.14.4
+    image: traccar/traccar:6.17.0
     restart: unless-stopped
     volumes:
       - traccar-data:/opt/traccar/data
       # voliteľné: cp traccar/traccar.xml.example traccar/traccar.xml a odkomentuj
       # - ./traccar/traccar.xml:/opt/traccar/conf/traccar.xml:ro
     ports:
-      - "8082:8082"   # Traccar web UI
-      - "5055:5055"   # OsmAnd / Traccar Client protokol (telefóny)
+      - "127.0.0.1:8082:8082"   # Traccar web UI, len localhost (von cez reverse proxy s HTTPS)
+      # 5055 zámerne verejný: sem posielajú polohu GPS zariadenia a telefóny (OsmAnd / Traccar Client)
+      - "5055:5055"
 
   logbook:
     build: ./backend
@@ -42,7 +43,7 @@ services:
       traccar:
         condition: service_started
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"   # len localhost, von cez reverse proxy s HTTPS
 
 volumes:
   db-data:

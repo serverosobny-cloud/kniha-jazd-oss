@@ -1,4 +1,5 @@
 // Filters bar component
+import { escapeHtml } from '../utils.js';
 
 export function renderFilters(options = {}) {
     const { vehicles = [], onFilter, currentFilters = {} } = options;
@@ -13,7 +14,7 @@ export function renderFilters(options = {}) {
                 <label>Vozidlo</label>
                 <select class="form-control" id="filter-vehicle">
                     <option value="">Všetky</option>
-                    ${vehicles.map(v => `<option value="${v.id}" ${currentFilters.vehicle_id == v.id ? 'selected' : ''}>${v.name || v.registration_plate}</option>`).join('')}
+                    ${vehicles.map(v => `<option value="${v.id}" ${currentFilters.vehicle_id == v.id ? 'selected' : ''}>${escapeHtml(v.name || v.registration_plate)}</option>`).join('')}
                 </select>
             </div>
             <div class="filter-group">

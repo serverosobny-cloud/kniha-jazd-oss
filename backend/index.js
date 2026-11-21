@@ -15,7 +15,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Trust proxy (za Traefik reverse proxy)
-app.set('trust proxy', 1);
+// Za reverse proxy nastav TRUST_PROXY (počet proxy hopov, napr. 1, alebo true); inak sa rate limit
+// viaže na IP proxy a X-Forwarded-For sa ignoruje.
+if (process.env.TRUST_PROXY) {
+    const tp = process.env.TRUST_PROXY;
+    app.set('trust proxy', tp === 'true' ? true : /^\d+$/.test(tp) ? parseInt(tp, 10) : false);
+}
 
 // ============================================================================
 // SECURITY MIDDLEWARE
@@ -55,7 +60,17 @@ const limiter = rateLimit({
     max: 500, // max 500 requestov per IP (zvýšené pre SPA)
     message: 'Príliš veľa požiadaviek z tejto IP, skúste neskôr'
 });
-app.use('/api/', limiter);
+app.use(limiter);
+
+// Prísnejší limiter na zlyhané prihlásenia (počíta len odpovede 401)
+const authFailLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    skipSuccessfulRequests: true,
+    skipFailedRequests: false,
+    requestWasSuccessful: (req, res) => res.statusCode !== 401,
+    message: 'Príliš veľa neúspešných prihlásení, skúste neskôr'
+});
 
 // Basic auth — aplikácia nemá vlastné používateľské účty, takže bez tohto je
 // každý údaj (jazdy, adresy, vodiči) verejný. Vypnúť len za vlastným SSO proxy.
@@ -71,7 +86,7 @@ const safeEqual = (a, b) => {
     const hb = crypto.createHash('sha256').update(b).digest();
     return crypto.timingSafeEqual(ha, hb);
 };
-app.use((req, res, next) => {
+app.use(authFailLimiter, (req, res, next) => {
     if (process.env.AUTH_DISABLED === 'true' || req.path === '/health') return next();
     const [scheme, encoded] = (req.headers.authorization || '').split(' ');
     if (scheme === 'Basic' && encoded) {

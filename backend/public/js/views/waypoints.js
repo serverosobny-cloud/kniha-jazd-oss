@@ -345,7 +345,7 @@ function addWaypoint(place) {
     const resultsDiv = document.getElementById('wp-search-results');
     if (resultsDiv) resultsDiv.innerHTML = '';
 
-    showToast(`${place.name} pridané`, 'success');
+    showToast(`${escapeHtml(place.name)} pridané`, 'success');
 }
 
 function removeWaypoint(idx) {

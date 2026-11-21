@@ -76,7 +76,7 @@ function renderDetail(trip, suggestion, audit, drivers) {
         ${suggestion?.suggestion?.suggested_type ? `
             <div class="alert alert-info">
                 &#128161; Návrh klasifikácie: <strong>${tripTypeLabel(suggestion.suggestion.suggested_type)}</strong>
-                ${suggestion.suggestion.suggested_purpose ? ` - ${suggestion.suggestion.suggested_purpose}` : ''}
+                ${suggestion.suggestion.suggested_purpose ? ` - ${escapeHtml(suggestion.suggestion.suggested_purpose)}` : ''}
                 <button class="btn btn-sm btn-primary" id="btn-apply-suggestion" style="margin-left:12px">Použiť</button>
             </div>
         ` : ''}

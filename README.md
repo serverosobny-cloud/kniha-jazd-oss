@@ -69,6 +69,10 @@ Príklad nechá zapnutý len protokol OsmAnd (telefóny), filtruje nepresné bod
 - Aplikácia nemá vlastné používateľské účty. Chráni ju HTTP Basic auth (`BASIC_AUTH_USER`,
   `BASIC_AUTH_PASSWORD`); bez nich sa nespustí. `AUTH_DISABLED=true` použi len za vlastným auth proxy (SSO).
 - Do internetu ju vystav len cez reverse proxy s HTTPS. Port 5055 Traccaru musí byť dostupný z telefónov.
+  Porty 8082 (Traccar UI) a 3000 (kniha jázd) sú v `docker-compose.yml` viazané len na localhost;
+  von ich vystav cez reverse proxy s HTTPS.
+- V Traccare vypni registráciu nových účtov (Settings → Server → Registration, alebo `web.registration`
+  na `false` v `traccar.xml`).
 - Google kľúč sa posiela do prehliadača (Maps JS API), preto ho obmedz na HTTP referrer `PUBLIC_URL`
   a len na Maps JavaScript, Places a Routes API.
 
@@ -83,6 +87,7 @@ Príklad nechá zapnutý len protokol OsmAnd (telefóny), filtruje nepresné bod
 | `TRACCAR_URL` | predvolene `http://traccar:8082/api` |
 | `GOOGLE_PLACES_API_KEY` | Google kľúč (Maps, Places, Routes); bez neho chýba mapa a prepočet vzdialenosti |
 | `PUBLIC_URL` | verejná URL, posiela sa ako Referer do Routes API |
+| `TRUST_PROXY` | počet reverse proxy pred appkou (číslo, napr. `1`) alebo `true`; bez neho sa `X-Forwarded-For` ignoruje |
 | `CORS_ORIGIN` | povolený origin (predvolene žiadny) |
 | `POSITION_RETENTION_DAYS` | koľko dní držať GPS pozície (predvolene 90) |
 | `DISPLAY_TZ` | časové pásmo pre exporty (predvolene `Europe/Bratislava`); kontajner nechaj v UTC |
