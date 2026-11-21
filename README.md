@@ -7,6 +7,11 @@ ty ich len označíš ako služobné alebo súkromné, potvrdíš a na konci mes
 *English: a self-hosted electronic trip logbook (Slovak VAT rules) built on top of Traccar's REST API.
 UI and docs are in Slovak.*
 
+![Prehľad](docs/prehlad.png)
+![Jazdy](docs/jazdy.png)
+
+*Snímky obsahujú len vymyslené testovacie dáta.*
+
 ## Čo ponúka navyše oproti samotnému Traccaru
 
 Traccar vie zbierať polohy a vypočítať jazdy. Nevie z nich urobiť knihu jázd pre účtovníctvo. Toto ju dopĺňa:
@@ -80,6 +85,7 @@ Príklad nechá zapnutý len protokol OsmAnd (telefóny), filtruje nepresné bod
 | `PUBLIC_URL` | verejná URL, posiela sa ako Referer do Routes API |
 | `CORS_ORIGIN` | povolený origin (predvolene žiadny) |
 | `POSITION_RETENTION_DAYS` | koľko dní držať GPS pozície (predvolene 90) |
+| `DISPLAY_TZ` | časové pásmo pre exporty (predvolene `Europe/Bratislava`); kontajner nechaj v UTC |
 
 ## Cron joby
 
@@ -99,5 +105,5 @@ DATABASE_URL=postgresql://... BASIC_AUTH_USER=dev BASIC_AUTH_PASSWORD=dev npm ru
 
 ## Licencia
 
-Apache License 2.0, pozri [LICENSE](LICENSE) a [NOTICE](NOTICE).
+Copyright 2026 serverosobny a Smart Network. Apache License 2.0, pozri [LICENSE](LICENSE) a [NOTICE](NOTICE).
 Traccar je samostatný projekt (Apache 2.0) a v tomto repozitári nie je pribalený.

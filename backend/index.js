@@ -36,7 +36,9 @@ app.use(helmet({
                          "https://maps.googleapis.com", "https://*.google.com"],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
-            workerSrc: ["'self'", "blob:"]
+            workerSrc: ["'self'", "blob:"],
+            // HTTPS rieši reverse proxy; inak by sa UI na http://server:3000 nenačítalo
+            upgradeInsecureRequests: null
         }
     }
 }));

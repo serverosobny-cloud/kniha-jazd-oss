@@ -1,5 +1,9 @@
 const express = require('express');
 const router = express.Router();
+
+// Časy jázd sú v DB ako UTC (timestamp bez zóny); v exporte ich ukazujeme v miestnom čase.
+const DISPLAY_TZ = process.env.DISPLAY_TZ || 'Europe/Bratislava';
+if (!/^[A-Za-z_]+(\/[A-Za-z_+-]+)*$/.test(DISPLAY_TZ)) throw new Error('Neplatné DISPLAY_TZ');
 const db = require('../db');
 const PDFDocument = require('pdfkit');
 const { Parser } = require('json2csv');
@@ -266,8 +270,8 @@ router.post('/csv', async (req, res) => {
                 v.registration_plate,
                 v.vin,
                 CONCAT(d.first_name, ' ', d.last_name) as driver_name,
-                TO_CHAR(t.start_time, 'DD.MM.YYYY HH24:MI') as start_time,
-                TO_CHAR(t.end_time, 'DD.MM.YYYY HH24:MI') as end_time,
+                TO_CHAR((t.start_time AT TIME ZONE 'UTC') AT TIME ZONE '${DISPLAY_TZ}', 'DD.MM.YYYY HH24:MI') as start_time,
+                TO_CHAR((t.end_time AT TIME ZONE 'UTC') AT TIME ZONE '${DISPLAY_TZ}', 'DD.MM.YYYY HH24:MI') as end_time,
                 t.start_address,
                 t.end_address,
                 ROUND(t.distance_meters / 1000.0, 2) as distance_km,
@@ -283,7 +287,7 @@ router.post('/csv', async (req, res) => {
             FROM trips t
             LEFT JOIN vehicles v ON t.vehicle_id = v.id
             LEFT JOIN drivers d ON t.driver_id = d.id
-            WHERE t.status = 'CONFIRMED' OR t.status = 'LOCKED'
+            WHERE t.status IN ('CONFIRMED', 'LOCKED')
         `;
         const params = [];
         let paramIndex = 1;
@@ -401,7 +405,7 @@ router.post('/pdf', async (req, res) => {
             FROM trips t
             LEFT JOIN vehicles v ON t.vehicle_id = v.id
             LEFT JOIN drivers d ON t.driver_id = d.id
-            WHERE t.status = 'CONFIRMED' OR t.status = 'LOCKED'
+            WHERE t.status IN ('CONFIRMED', 'LOCKED')
         `;
         const params = [];
         let paramIndex = 1;
@@ -446,6 +450,9 @@ router.post('/pdf', async (req, res) => {
 
         // Vytvoriť PDF
         const doc = new PDFDocument({ margin: 50, size: 'A4' });
+        // Štandardné PDF písma nemajú ť/č/ľ; bez TTF sa diakritika rozsype.
+        const PDF_FONT = process.env.PDF_FONT || '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
+        if (require('fs').existsSync(PDF_FONT)) doc.font(PDF_FONT);
         
         // Buffer pre uloženie PDF
         const chunks = [];
@@ -487,13 +494,13 @@ router.post('/pdf', async (req, res) => {
 
         doc.fontSize(8);
         result.rows.forEach((trip, index) => {
-            const startTime = new Date(trip.start_time).toLocaleString('sk-SK');
+            const startTime = new Date(trip.start_time).toLocaleString('sk-SK', { timeZone: DISPLAY_TZ });
             const tripType = trip.trip_type === 'business' ? 'Služobná' : 
                            trip.trip_type === 'private' ? 'Privátna' : 'Dochádzka';
 
             doc.text(`${index + 1}. ${startTime}`);
             doc.text(`   ${trip.start_address || 'N/A'} → ${trip.end_address || 'N/A'}`);
-            doc.text(`   ${tripType}, ${trip.distance_km.toFixed(2)} km`);
+            doc.text(`   ${tripType}, ${parseFloat(trip.distance_km).toFixed(2)} km`);
             if (trip.trip_purpose) {
                 doc.text(`   Účel: ${trip.trip_purpose}`);
             }
@@ -508,7 +515,7 @@ router.post('/pdf', async (req, res) => {
         // Päta
         doc.moveDown(2);
         doc.fontSize(8).text(
-            `Vygenerované: ${new Date().toLocaleString('sk-SK')}`,
+            `Vygenerované: ${new Date().toLocaleString('sk-SK', { timeZone: DISPLAY_TZ })}`,
             { align: 'center' }
         );
 
