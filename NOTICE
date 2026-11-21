@@ -1,0 +1,15 @@
+Kniha jázd
+Copyright 2025-2026 The Kniha jázd authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product works with Traccar (https://www.traccar.org), an open-source
+GPS tracking server, Copyright Anton Tananaev and contributors, licensed under
+the Apache License, Version 2.0. Traccar is not bundled in this repository;
+it is used as a separate service via its public REST API and the official
+Docker image traccar/traccar. "Traccar" is used here only to describe
+compatibility; this project is not affiliated with or endorsed by the Traccar
+project.
+
+Map display, distance calculation and place search use Google Maps Platform
+APIs under Google's own terms, with an API key supplied by the operator.
